@@ -328,7 +328,10 @@ async def blender(interaction: discord.Interaction):
 async def blender2(interaction: discord.Interaction):
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1297469727957848115/1353447104701403247/remix-23c39ee1-e260-4074-9abd-6f87775195af.png?ex=67e1af57&is=67e05dd7&hm=784d6bf53f633fe5d1fafa5f99ba635385a9b79036a3f3a095b98b46d74a84b7&")
 
-
+@bot.tree.command(name="drachenlord", description="shows an funny picture of rainer winkler")
+async def drachenlord(intercation: discord.Interaction):
+    await interaction.response.send_message("https://i1.sndcdn.com/artworks-dN9mbk4QTEmEWMCv-JvamaA-t500x500.jpg")
+    
 # Command: babaeier22
 @bot.tree.command(name="babaeier22", description="Shows the Face and Fat Body of the User babaeier22")
 async def babaeier22(interaction: discord.Interaction):
