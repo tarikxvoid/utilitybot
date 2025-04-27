@@ -27,7 +27,7 @@ async def on_ready():
 @bot.event
 async def on_voice_state_update(member, before, after):
     if after.channel is not None:  # User joined a channel
-        target_channel_id = 1234567890  # Replace this with the ID of the channel you want users to join
+        target_channel_id = 1224024298990342305  # Replace this with the ID of the channel you want users to join
         
         if after.channel.id == target_channel_id:
             if member.id not in active_vc:
