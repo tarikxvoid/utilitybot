@@ -11,6 +11,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 intents.guilds = True
+intents.reactions = True  # This intent is needed for tracking reactions
 
 bot = commands.Bot(command_prefix=',', intents=intents)
 
@@ -109,6 +110,22 @@ async def reroll(ctx, message_id: int = None):
             await ctx.send(f"🎉 The giveaway has no eligible entries. No winner was chosen.")
     else:
         await ctx.send("Giveaway with that ID not found.")
+
+# Banner Command (Get user banner)
+@bot.command()
+async def banner(ctx, member: discord.Member = None):
+    """Get a user's banner."""
+    
+    if not member:
+        member = ctx.author  # Default to the author if no member is specified
+    
+    banner_url = member.banner.url if member.banner else None
+    if banner_url:
+        embed = discord.Embed(title=f"{member.name}'s Banner", color=0x00ff00)
+        embed.set_image(url=banner_url)
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send(f"{member.name} does not have a banner set.")
 
 # Mute Command (Timeout)
 @bot.command()
@@ -226,23 +243,6 @@ async def avatar(ctx, member: discord.Member = None):
     embed = discord.Embed(title=f"{member.name}'s Avatar", color=0x00ff00)
     embed.set_image(url=member.avatar.url)
     await ctx.send(embed=embed)
-
-# Banner Command (Get user banner)
-@bot.command()
-async def banner(ctx, member: discord.Member = None):
-    """Get a user's banner."""
-    
-    if not member:
-        await ctx.send("Missing argument: [member]. Usage: `,banner [member]`")
-        return
-    
-    banner_url = member.banner.url if member.banner else None
-    if banner_url:
-        embed = discord.Embed(title=f"{member.name}'s Banner", color=0x00ff00)
-        embed.set_image(url=banner_url)
-        await ctx.send(embed=embed)
-    else:
-        await ctx.send(f"{member.name} does not have a banner set.")
 
 # Server Info Command
 @bot.command()
