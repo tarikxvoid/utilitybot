@@ -901,5 +901,4 @@ token = os.getenv('TOKEN')
 if not token:
     raise ValueError("Token not found in environment variables. Make sure it's correctly set in Secrets.")
 
-keep_alive()
 bot.run(token)
