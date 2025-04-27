@@ -311,6 +311,12 @@ async def nsfwappollopaok(interaction: discord.Interaction):
 async def torlink(interaction: discord.Interaction):
     await interaction.response.send_message("https://tor.link/")
 
+
+@bot.tree.command(name="gleggmire", description="Shows gleggmire.")
+async def gleggmire(interaction: discord.Interaction):
+    await interaction.response.send_message("https://cdn.discordapp.com/attachments/1366068791749906444/1366138974749327654/1200x630bf-60.png?ex=680fdb91&is=680e8a11&hm=fc0c531da9b8b4a7998d293f4624cf0b4e7f640105fcfcb6f1e15ef8c08d4ef8&")
+
+
 # Command: whitecancer
 @bot.tree.command(name="whitecancer", description="Shows an Leak of the Face from prs.stm")
 async def whitecancer(interaction: discord.Interaction):
@@ -330,7 +336,7 @@ async def blender2(interaction: discord.Interaction):
 
 # Command: blender2
 @bot.tree.command(name="drachenlord", description="Shows Rainer Winkler")
-async def blender2(interaction: discord.Interaction):
+async def drachenlord(interaction: discord.Interaction):
     await interaction.response.send_message("https://i1.sndcdn.com/artworks-dN9mbk4QTEmEWMCv-JvamaA-t500x500.jpg")
 
 
