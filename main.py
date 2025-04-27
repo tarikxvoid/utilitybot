@@ -986,19 +986,34 @@ async def ban(ctx, member: discord.Member, *, reason=None):
     await ctx.send(embed=embed)
 
 # Clear Command (Clearing messages)
-@bot.command()
+from discord.ext.commands import has_permissions, MissingPermissions
+
+# Clear Command (Clearing messages)
+@bot.command(name="clear")
 @has_permissions(manage_messages=True)
 async def clear(ctx, amount: int):
-    """Clear messages"""
-    missing_perms = await check_permissions(ctx, ['manage_messages'])
-    if missing_perms:
-        await ctx.send(f"Missing permissions: {', '.join(missing_perms)}")
-        return
+    """Clear messages in a channel."""
 
-    await ctx.channel.purge(limit=amount)
-    embed = discord.Embed(title="Messages Cleared", description=f"Cleared {amount} messages.", color=0x00ff00)
-    await ctx.send(embed=embed)
+    # Purge the messages
+    deleted = await ctx.channel.purge(limit=amount)
 
+    # Send confirmation embed
+    embed = discord.Embed(
+        title="Messages Cleared",
+        description=f"Cleared {len(deleted)} messages.",
+        color=0x00ff00
+    )
+    confirmation = await ctx.send(embed=embed)
+
+    # Auto-delete the confirmation after few seconds (optional)
+    await asyncio.sleep(5)
+    await confirmation.delete()
+
+# Error handler for missing permissions
+@clear.error
+async def clear_error(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send("You don't have permission to manage messages.")
 # Role Command (Add/Remove Role)
 @bot.command()
 @has_permissions(manage_roles=True)
