@@ -903,10 +903,16 @@ async def help_command(interaction: discord.Interaction):
 # PREFIX CMDS
 # Permission Checking Helper
 async def check_permissions(ctx, perms):
-    missing_perms = [perm for perm in perms if not getattr(ctx.author.permissions_in(ctx.channel), perm)]
-    if missing_perms:
-        return missing_perms
-    return None
+    missing_perms = []
+
+    user_perms = ctx.author.permissions_in(ctx.channel)  # get the Permissions object once
+
+    for perm in perms:
+        if not getattr(user_perms, perm, False):  # safely get the permission
+            missing_perms.append(perm)
+
+    return missing_perms if missing_perms else None
+
 
 # Welcome Message (Embed)
 @bot.event
