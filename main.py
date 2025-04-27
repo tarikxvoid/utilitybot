@@ -3,6 +3,9 @@ from discord.ext import commands
 from discord.ext.commands import has_permissions
 from datetime import timedelta
 import os
+import random
+import asyncio
+from datetime import datetime, timedelta
 
 intents = discord.Intents.default()
 intents.members = True
@@ -13,6 +16,9 @@ bot = commands.Bot(command_prefix=',', intents=intents)
 
 # Load bot token from Replit secrets
 TOKEN = os.getenv("TOKEN")
+
+# Store ongoing giveaways
+giveaways = {}
 
 # Event: When the bot is ready
 @bot.event
@@ -169,5 +175,75 @@ async def show_commands(ctx):
     embed.add_field(name="?ping", value="Check bot latency.", inline=False)
 
     await ctx.send(embed=embed)
+
+# Giveaway Command
+@bot.command()
+async def giveaway(ctx, time: str, *, prize: str):
+    """Start a giveaway. time in seconds, prize is the giveaway item."""
+    try:
+        # Convert time to seconds
+        giveaway_time = int(time)
+    except ValueError:
+        await ctx.send("Invalid time format. Please enter time in seconds.")
+        return
+
+    # Create a giveaway message
+    embed = discord.Embed(title="Giveaway!", description=f"React with 🎉 to enter the giveaway for {prize}!\nTime remaining: {time} seconds.", color=0x00ff00)
+    giveaway_message = await ctx.send(embed=embed)
+    
+    # Add reaction for users to react with
+    await giveaway_message.add_reaction('🎉')
+
+    # Set the time when the giveaway should end
+    end_time = datetime.utcnow() + timedelta(seconds=giveaway_time)
+
+    # Store the giveaway details
+    giveaways[giveaway_message.id] = {
+        "prize": prize,
+        "end_time": end_time,
+        "message": giveaway_message,
+        "reacted_users": set()
+    }
+
+    # Wait for the giveaway to end
+    await asyncio.sleep(giveaway_time)
+
+    # Check if the giveaway is still active
+    if giveaway_message.id in giveaways:
+        winner = await pick_winner(giveaway_message)
+        if winner:
+            await ctx.send(f"🎉 The giveaway has ended! The winner is {winner.mention} who won **{prize}**!")
+        else:
+            await ctx.send(f"🎉 The giveaway has ended! Unfortunately, no one reacted to enter the giveaway.")
+        
+        # Clean up after the giveaway
+        del giveaways[giveaway_message.id]
+
+# Helper function to pick a winner from reactions
+async def pick_winner(giveaway_message):
+    giveaway = giveaways[giveaway_message.id]
+    # Fetch all users who reacted with 🎉
+    reaction = discord.utils.get(giveaway_message.reactions, emoji='🎉')
+    if reaction:
+        users = await reaction.users().flatten()
+        # Remove bot and the message author from the list of eligible users
+        users = [user for user in users if not user.bot and user != giveaway_message.author]
+        if users:
+            return random.choice(users)  # Randomly pick a winner
+    return None
+
+# Reroll Command
+@bot.command()
+async def reroll(ctx, message_id: int):
+    """Reroll a giveaway by message ID."""
+    giveaway = giveaways.get(message_id)
+    if giveaway:
+        winner = await pick_winner(giveaway["message"])
+        if winner:
+            await ctx.send(f"🎉 The new winner of the giveaway is {winner.mention} who won **{giveaway['prize']}**!")
+        else:
+            await ctx.send(f"🎉 The giveaway has no eligible entries. No winner was chosen.")
+    else:
+        await ctx.send("Giveaway with that ID not found.")
 
 bot.run(TOKEN)
