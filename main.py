@@ -127,6 +127,95 @@ async def banner(ctx, member: discord.Member = None):
     else:
         await ctx.send(f"{member.name} does not have a banner set.")
 
+@bot.command()
+@commands.has_role("Giveaway Host")
+async def giveaway(ctx):
+    questions = [
+        'ðŸ“Œ In welchem Kanal soll das Giveaway stattfinden? (z.â€¯B. #gewinnspiel)',
+        'ðŸŽ Was ist der Preis?',
+        'â±ï¸ Wie lange soll das Giveaway laufen (in Sekunden)?'
+    ]
+    answers = []
+
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
+
+    for question in questions:
+        await ctx.send(question)
+        try:
+            message = await client.wait_for('message', timeout=30.0, check=check)
+        except asyncio.TimeoutError:
+            await ctx.send('â° Zeit abgelaufen! Bitte versuche es erneut.')
+            return
+        answers.append(message.content)
+
+    try:
+        channel_id = int(answers[0][2:-1])
+        channel = client.get_channel(channel_id)
+        if channel is None:
+            raise Exception()
+    except:
+        await ctx.send(f'âš ï¸ UngÃ¼ltige KanalerwÃ¤hnung. Bitte nutze z.â€¯B. {ctx.channel.mention}')
+        return
+
+    prize = answers[1]
+    duration = int(answers[2])
+
+    await ctx.send(f'ðŸŽ‰ Giveaway fÃ¼r **{prize}** startet in {channel.mention} und lÃ¤uft **{duration} Sekunden**!')
+
+    embed = discord.Embed(color=0x2ecc71)
+    embed.set_author(name='ðŸŽ‰ GIVEAWAY', icon_url='https://i.imgur.com/VaX0pfM.png')
+    embed.add_field(
+        name=f'{ctx.author.name} verlost: {prize}',
+        value='Reagiere mit ðŸŽ‰ um teilzunehmen!',
+        inline=False
+    )
+    end_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=duration)
+    embed.set_footer(text=f'Ende: {end_time.strftime("%d.%m.%Y um %H:%M:%S")} UTC')
+    message = await channel.send(embed=embed)
+    await message.add_reaction("ðŸŽ‰")
+    await asyncio.sleep(duration)
+
+    message = await channel.fetch_message(message.id)
+    users = await message.reactions[0].users().flatten()
+    users = [u for u in users if u != client.user]
+
+    if not users:
+        await channel.send('âŒ Niemand hat teilgenommen.')
+        return
+
+    winner = random.choice(users)
+    result = discord.Embed(color=0xff2424)
+    result.set_author(name='ðŸŽŠ GIVEAWAY BEENDET!', icon_url='https://i.imgur.com/DDric14.png')
+    result.add_field(
+        name=f'ðŸŽ Preis: {prize}',
+        value=f'ðŸ† Gewinner: {winner.mention}\nðŸ‘¥ Teilnehmer: {len(users)}',
+        inline=False
+    )
+    await channel.send(embed=result)
+
+@bot.command()
+@commands.has_role("Giveaway Host")
+async def reroll(ctx, channel: discord.TextChannel, message_id: int):
+    try:
+        message = await channel.fetch_message(message_id)
+    except:
+        await ctx.send("âŒ Nachricht nicht gefunden.")
+        return
+
+    users = await message.reactions[0].users().flatten()
+    users = [u for u in users if u != client.user]
+
+    if not users:
+        await ctx.send("âŒ Keine Teilnehmer gefunden.")
+        return
+
+    winner = random.choice(users)
+    embed = discord.Embed(color=0xff2424)
+    embed.set_author(name='ðŸ” NEUER GEWINNER', icon_url='https://i.imgur.com/DDric14.png')
+    embed.add_field(name='ðŸ† Gewinner:', value=winner.mention, inline=False)
+    await channel.send(embed=embed)
+
 # Mute Command (Timeout)
 @bot.command()
 @has_permissions(manage_roles=True)
