@@ -116,10 +116,14 @@ hurensohn = ["hrs", "hure", "hxre", "ass", "bitch", "hoe", "idiot", "whore", "ar
 async def on_message(message):
     if message.author == bot.user:
         return
-        
-    if any(hurensohn in message.content.lower() for hurensohn in hurensohn):
-        await message.channel.send(f"{message.author.mention}, You sent an Word that were Blocked by the Bot Owner!\nIf this should happen repeatedly you'll be banned from using the bot.")
 
+    # Automod: Block certain words
+    if any(hurensohn in message.content.lower() for hurensohn in hurensohn):
+        await message.channel.send(f"{message.author.mention}, You sent a word that was blocked by the bot owner!\nIf this should happen repeatedly you'll be banned from using the bot.")
+    
+    # Important: Let the bot process the command
+    await bot.process_commands(message)  # <-- this line is the key!
+    
 # Command: vocalremover
 @bot.tree.command(name="vocalremover", description="Sends an Link to vocalremover.org")
 async def vocalremover(interaction: discord.Interaction):
