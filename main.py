@@ -43,94 +43,74 @@ async def banner(ctx, member: discord.Member = None):
         await ctx.send(f"{member.name} does not have a banner set.")
 
 @bot.command()
-@commands.has_role("Giveaway Host")
-async def giveaway(ctx):
-    questions = [
-        'ðŸ“Œ In welchem Kanal soll das Giveaway stattfinden? (z.â€¯B. #gewinnspiel)',
-        'ðŸŽ Was ist der Preis?',
-        'â±ï¸ Wie lange soll das Giveaway laufen (in Sekunden)?'
-    ]
-    answers = []
+async def giveaway(ctx, time: int = None, *, prize: str = None):
+    """Start a giveaway. Users react to join."""
+    if time is None or prize is None:
+        return await ctx.send("Usage: `,giveaway [time in seconds] [prize]`")
 
-    def check(m):
-        return m.author == ctx.author and m.channel == ctx.channel
-
-    for question in questions:
-        await ctx.send(question)
-        try:
-            message = await client.wait_for('message', timeout=30.0, check=check)
-        except asyncio.TimeoutError:
-            await ctx.send('â° Zeit abgelaufen! Bitte versuche es erneut.')
-            return
-        answers.append(message.content)
-
-    try:
-        channel_id = int(answers[0][2:-1])
-        channel = client.get_channel(channel_id)
-        if channel is None:
-            raise Exception()
-    except:
-        await ctx.send(f'âš ï¸ UngÃ¼ltige KanalerwÃ¤hnung. Bitte nutze z.â€¯B. {ctx.channel.mention}')
-        return
-
-    prize = answers[1]
-    duration = int(answers[2])
-
-    await ctx.send(f'ðŸŽ‰ Giveaway fÃ¼r **{prize}** startet in {channel.mention} und lÃ¤uft **{duration} Sekunden**!')
-
-    embed = discord.Embed(color=0x2ecc71)
-    embed.set_author(name='ðŸŽ‰ GIVEAWAY', icon_url='https://i.imgur.com/VaX0pfM.png')
-    embed.add_field(
-        name=f'{ctx.author.name} verlost: {prize}',
-        value='Reagiere mit ðŸŽ‰ um teilzunehmen!',
-        inline=False
+    embed = discord.Embed(
+        title="🎉 Giveaway Started!",
+        description=f"Prize: **{prize}**\nReact with 🎉 to join!\nTime: {time} seconds",
+        color=discord.Color.random()
     )
-    end_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=duration)
-    embed.set_footer(text=f'Ende: {end_time.strftime("%d.%m.%Y um %H:%M:%S")} UTC')
-    message = await channel.send(embed=embed)
-    await message.add_reaction("ðŸŽ‰")
-    await asyncio.sleep(duration)
+    message = await ctx.send(embed=embed)
+    await message.add_reaction('🎉')
 
-    message = await channel.fetch_message(message.id)
-    users = await message.reactions[0].users().flatten()
-    users = [u for u in users if u != client.user]
+    giveaways[message.id] = {
+        'prize': prize,
+        'message': message,
+        'channel': ctx.channel
+    }
 
-    if not users:
-        await channel.send('âŒ Niemand hat teilgenommen.')
-        return
+    await asyncio.sleep(time)
 
-    winner = random.choice(users)
-    result = discord.Embed(color=0xff2424)
-    result.set_author(name='ðŸŽŠ GIVEAWAY BEENDET!', icon_url='https://i.imgur.com/DDric14.png')
-    result.add_field(
-        name=f'ðŸŽ Preis: {prize}',
-        value=f'ðŸ† Gewinner: {winner.mention}\nðŸ‘¥ Teilnehmer: {len(users)}',
-        inline=False
-    )
-    await channel.send(embed=result)
+    # After waiting, pick a winner
+    new_message = await ctx.channel.fetch_message(message.id)
+    reaction = discord.utils.get(new_message.reactions, emoji='🎉')
+
+    if reaction:
+        users = await reaction.users().flatten()
+        users = [user for user in users if not user.bot]
+
+        if users:
+            winner = random.choice(users)
+            await ctx.send(f"🎉 Congratulations {winner.mention}! You won **{prize}**!")
+        else:
+            await ctx.send("No valid entries. No winner could be determined.")
+
+    giveaways.pop(message.id, None)
 
 @bot.command()
-@commands.has_role("Giveaway Host")
-async def reroll(ctx, channel: discord.TextChannel, message_id: int):
-    try:
-        message = await channel.fetch_message(message_id)
-    except:
-        await ctx.send("âŒ Nachricht nicht gefunden.")
-        return
+async def reroll(ctx, message_id: int = None):
+    """Reroll a giveaway by message ID."""
+    if message_id is None:
+        return await ctx.send("Usage: `,reroll [message_id]`")
 
-    users = await message.reactions[0].users().flatten()
-    users = [u for u in users if u != client.user]
+    giveaway = giveaways.get(message_id)
 
-    if not users:
-        await ctx.send("âŒ Keine Teilnehmer gefunden.")
-        return
+    if not giveaway:
+        try:
+            # Fetch old message
+            channel = ctx.channel
+            message = await channel.fetch_message(message_id)
+        except:
+            return await ctx.send("Couldn't find that giveaway message.")
 
-    winner = random.choice(users)
-    embed = discord.Embed(color=0xff2424)
-    embed.set_author(name='ðŸ” NEUER GEWINNER', icon_url='https://i.imgur.com/DDric14.png')
-    embed.add_field(name='ðŸ† Gewinner:', value=winner.mention, inline=False)
-    await channel.send(embed=embed)
+        reaction = discord.utils.get(message.reactions, emoji='🎉')
+        if reaction:
+            users = await reaction.users().flatten()
+            users = [user for user in users if not user.bot]
 
+            if users:
+                winner = random.choice(users)
+                await ctx.send(f"🔄 Rerolled! New winner is {winner.mention}!")
+            else:
+                await ctx.send("No valid entries to reroll.")
+        else:
+            await ctx.send("No reactions found on the giveaway message.")
+    else:
+        await ctx.send("This giveaway is still running, wait until it ends to reroll!")
+        
 # Mute Command (Timeout)
 @bot.command()
 @has_permissions(manage_roles=True)
