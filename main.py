@@ -989,7 +989,7 @@ async def ban(ctx, member: discord.Member, *, reason=None):
 from discord.ext.commands import has_permissions, MissingPermissions
 
 # Clear Command (Clearing messages)
-@bot.command(name="clear")
+@bot.command(name="purge")
 @has_permissions(manage_messages=True)
 async def clear(ctx, amount: int):
     """Clear messages in a channel."""
@@ -1041,19 +1041,23 @@ async def avatar(ctx, member: discord.Member = None):
     embed.set_image(url=member.avatar.url)
     await ctx.send(embed=embed)
 
-# Banner Command (Get user banner)
 @bot.command()
 async def banner(ctx, member: discord.Member = None):
-    """Show a member's banner"""
+    """Show a member's banner."""
     if member is None:
         member = ctx.author
-    banner_url = member.banner.url if member.banner else None
-    if banner_url:
+
+    # Fetch the full user profile
+    user = await bot.fetch_user(member.id)
+
+    if user.banner:
+        banner_url = user.banner.url
         embed = discord.Embed(title=f"{member.name}'s Banner", color=0x00ff00)
         embed.set_image(url=banner_url)
         await ctx.send(embed=embed)
     else:
         await ctx.send(f"{member.name} does not have a banner set.")
+
 
 # Server Info Command
 @bot.command()
