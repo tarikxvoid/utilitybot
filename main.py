@@ -6,7 +6,6 @@ from datetime import timedelta, datetime
 import pytz
 import os
 import aiohttp
-from keep_alive import keep_alive
 
 # Creating intents with the proper attributes
 intents = discord.Intents.default()
