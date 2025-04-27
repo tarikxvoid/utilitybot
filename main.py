@@ -43,74 +43,62 @@ async def banner(ctx, member: discord.Member = None):
         await ctx.send(f"{member.name} does not have a banner set.")
 
 @bot.command()
-async def giveaway(ctx, time: int = None, *, prize: str = None):
-    """Start a giveaway. Users react to join."""
-    if time is None or prize is None:
-        return await ctx.send("Usage: `,giveaway [time in seconds] [prize]`")
+async def giveaway(ctx, time_in_seconds: int = None, *, prize: str = None):
+    """Start a giveaway. Users react with 🎉 to enter."""
+    if time_in_seconds is None or prize is None:
+        return await ctx.send("Usage: `,giveaway [time_in_seconds] [prize]`")
 
     embed = discord.Embed(
-        title="🎉 Giveaway Started!",
-        description=f"Prize: **{prize}**\nReact with 🎉 to join!\nTime: {time} seconds",
+        title="🎉 Giveaway 🎉",
+        description=f"Prize: **{prize}**\nReact with 🎉 to enter!\nEnds in {time_in_seconds} seconds!",
         color=discord.Color.random()
     )
-    message = await ctx.send(embed=embed)
-    await message.add_reaction('🎉')
+    giveaway_message = await ctx.send(embed=embed)
+    await giveaway_message.add_reaction('🎉')
 
-    giveaways[message.id] = {
-        'prize': prize,
-        'message': message,
-        'channel': ctx.channel
-    }
+    # Wait for the duration
+    await asyncio.sleep(time_in_seconds)
 
-    await asyncio.sleep(time)
+    # Fetch the message again to get updated reactions
+    giveaway_message = await ctx.channel.fetch_message(giveaway_message.id)
 
-    # After waiting, pick a winner
-    new_message = await ctx.channel.fetch_message(message.id)
-    reaction = discord.utils.get(new_message.reactions, emoji='🎉')
+    reaction = discord.utils.get(giveaway_message.reactions, emoji='🎉')
+    if not reaction:
+        return await ctx.send("No one reacted, no winner can be chosen.")
 
-    if reaction:
-        users = await reaction.users().flatten()
-        users = [user for user in users if not user.bot]
+    users = await reaction.users().flatten()
+    users = [user for user in users if not user.bot]
 
-        if users:
-            winner = random.choice(users)
-            await ctx.send(f"🎉 Congratulations {winner.mention}! You won **{prize}**!")
-        else:
-            await ctx.send("No valid entries. No winner could be determined.")
-
-    giveaways.pop(message.id, None)
+    if not users:
+        await ctx.send("No valid entries, no winner can be chosen.")
+    else:
+        winner = random.choice(users)
+        await ctx.send(f"🎉 Congratulations {winner.mention}! You won **{prize}**!")
 
 @bot.command()
 async def reroll(ctx, message_id: int = None):
-    """Reroll a giveaway by message ID."""
+    """Reroll a winner from a giveaway message ID."""
     if message_id is None:
         return await ctx.send("Usage: `,reroll [message_id]`")
 
-    giveaway = giveaways.get(message_id)
+    try:
+        message = await ctx.channel.fetch_message(message_id)
+    except discord.NotFound:
+        return await ctx.send("Couldn't find a message with that ID here.")
 
-    if not giveaway:
-        try:
-            # Fetch old message
-            channel = ctx.channel
-            message = await channel.fetch_message(message_id)
-        except:
-            return await ctx.send("Couldn't find that giveaway message.")
+    reaction = discord.utils.get(message.reactions, emoji='🎉')
+    if not reaction:
+        return await ctx.send("No 🎉 reactions found.")
 
-        reaction = discord.utils.get(message.reactions, emoji='🎉')
-        if reaction:
-            users = await reaction.users().flatten()
-            users = [user for user in users if not user.bot]
+    users = await reaction.users().flatten()
+    users = [user for user in users if not user.bot]
 
-            if users:
-                winner = random.choice(users)
-                await ctx.send(f"🔄 Rerolled! New winner is {winner.mention}!")
-            else:
-                await ctx.send("No valid entries to reroll.")
-        else:
-            await ctx.send("No reactions found on the giveaway message.")
+    if not users:
+        await ctx.send("No valid entries to reroll.")
     else:
-        await ctx.send("This giveaway is still running, wait until it ends to reroll!")
-        
+        new_winner = random.choice(users)
+        await ctx.send(f"🔄 Reroll! New winner is {new_winner.mention}!")        
+
 # Mute Command (Timeout)
 @bot.command()
 @has_permissions(manage_roles=True)
