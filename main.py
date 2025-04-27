@@ -897,7 +897,7 @@ async def help_command(interaction: discord.Interaction):
     await interaction.followup.send(embed=embed5, ephemeral=True)
     await interaction.followup.send(embed=embed6, ephemeral=True)
 
-token = os.environ['TOKEN']
+token = os.getenv['TOKEN']
 
 if not token:
     raise ValueError("Token not found in environment variables. Make sure it's correctly set in Secrets.")
