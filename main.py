@@ -8,78 +8,16 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 intents.guilds = True
-intents.voice_states = True
 
 bot = commands.Bot(command_prefix=',', intents=intents)
 
 # Load bot token from Replit secrets
 TOKEN = os.getenv("TOKEN")
 
-# Store for active voice channels
-active_vc = {}
-
 # Event: When the bot is ready
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-
-# Event: When a user joins a voice channel
-@bot.event
-async def on_voice_state_update(member, before, after):
-    if after.channel is not None:  # User joined a channel
-        target_channel_id = 1224024298990342305  # Replace this with the ID of the channel you want users to join
-        
-        if after.channel.id == target_channel_id:
-            if member.id not in active_vc:
-                overwrites = {
-                    member.guild.default_role: discord.PermissionOverwrite(connect=False),
-                    member: discord.PermissionOverwrite(connect=True)
-                }
-                new_channel = await member.guild.create_voice_channel(f"VC-{member.name}", overwrites=overwrites)
-                active_vc[member.id] = new_channel
-                await member.move_to(new_channel)
-
-    elif before.channel is not None and before.channel.id in active_vc:
-        if len(before.channel.members) == 0:
-            await before.channel.delete()
-            del active_vc[member.id]
-
-# Voice Ban Command
-@bot.command()
-@has_permissions(manage_channels=True)
-async def voiceban(ctx, member: discord.Member, *, reason=None):
-    """Ban a member from a specific voice channel."""
-    # Check if the member is already in an active voice channel
-    for channel in active_vc.values():
-        if member in channel.members:
-            await member.move_to(None)
-            await channel.set_permissions(member, connect=False)
-            embed = discord.Embed(title="Voice Banned", description=f"{member.mention} has been banned from voice channels.", color=0xff0000)
-            await ctx.send(embed=embed)
-            return
-    await ctx.send(f"{member.mention} is not in any voice channels.")
-
-# Voice Kick Command
-@bot.command()
-@has_permissions(manage_channels=True)
-async def voicekick(ctx, member: discord.Member, *, reason=None):
-    """Kick a member from a specific voice channel."""
-    for channel in active_vc.values():
-        if member in channel.members:
-            await member.move_to(None)
-            embed = discord.Embed(title="Voice Kicked", description=f"{member.mention} has been kicked from the voice channel.", color=0xff0000)
-            await ctx.send(embed=embed)
-            return
-    await ctx.send(f"{member.mention} is not in any voice channels.")
-
-# Voice Limit Command
-@bot.command()
-@has_permissions(manage_channels=True)
-async def voicelimit(ctx, channel: discord.VoiceChannel, limit: int):
-    """Set a limit for the number of members allowed in a voice channel."""
-    await channel.edit(user_limit=limit)
-    embed = discord.Embed(title="Voice Channel Limit Set", description=f"Voice channel {channel.name} now has a limit of {limit} members.", color=0x00ff00)
-    await ctx.send(embed=embed)
 
 # Mute Command (Timeout)
 @bot.command()
@@ -229,9 +167,6 @@ async def show_commands(ctx):
     embed.add_field(name="?serverinfo", value="Get server information.", inline=False)
     embed.add_field(name="?userinfo", value="Get user information.", inline=False)
     embed.add_field(name="?ping", value="Check bot latency.", inline=False)
-    embed.add_field(name="?voiceban", value="Ban a member from all voice channels.", inline=False)
-    embed.add_field(name="?voicekick", value="Kick a member from all voice channels.", inline=False)
-    embed.add_field(name="?voicelimit", value="Set the member limit for a voice channel.", inline=False)
 
     await ctx.send(embed=embed)
 
