@@ -15,6 +15,9 @@ bot = commands.Bot(command_prefix=',', intents=intents)
 # Load bot token from Replit secrets
 TOKEN = os.getenv("TOKEN")
 
+# Store for active voice channels
+active_vc = {}
+
 # Event: When the bot is ready
 @bot.event
 async def on_ready():
@@ -24,20 +27,30 @@ async def on_ready():
 @bot.event
 async def on_voice_state_update(member, before, after):
     if after.channel is not None:  # User joined a channel
-        # Create a new private voice channel for the user
-        overwrites = {
-            member.guild.default_role: discord.PermissionOverwrite(connect=False),  # Block others from joining
-            member: discord.PermissionOverwrite(connect=True)  # Allow the user to connect
-        }
+        target_channel_id = 1234567890  # Replace this with the ID of the channel you want users to join
+        
+        if after.channel.id == target_channel_id:
+            if member.id not in active_vc:
+                overwrites = {
+                    member.guild.default_role: discord.PermissionOverwrite(connect=False),
+                    member: discord.PermissionOverwrite(connect=True)
+                }
+                new_channel = await member.guild.create_voice_channel(f"VC-{member.name}", overwrites=overwrites)
+                active_vc[member.id] = new_channel
+                await member.move_to(new_channel)
 
-        # Create a temporary channel named after the member
-        new_channel = await member.guild.create_voice_channel(f"VC-{member.name}", overwrites=overwrites)
+    elif before.channel is not None and before.channel.id in active_vc:
+        if len(before.channel.members) == 0:
+            await before.channel.delete()
+            del active_vc[member.id]
 
-        # Move the user to their own channel
-        await member.move_to(new_channel)
-
-        # Send a confirmation message
-        print(f"{member.name} joined {after.channel.name} and was moved to {new_channel.name}")
+# Welcome message event
+@bot.event
+async def on_member_join(member):
+    channel = discord.utils.get(member.guild.text_channels, name="news")
+    if channel:
+        embed = discord.Embed(title=f"Welcome {member.name}!", description=f"Welcome to the server, {member.mention}!", color=0x00ff00)
+        await channel.send(embed=embed)
 
 # Permission Checking Helper
 async def check_permissions(ctx, perms):
@@ -46,11 +59,38 @@ async def check_permissions(ctx, perms):
         return missing_perms
     return None
 
+# Mute Command (Timeout)
+@bot.command()
+@has_permissions(manage_roles=True)
+async def mute(ctx, member: discord.Member, time: str, *, reason=None):
+    time_delta = timedelta(seconds=int(time)) if time.isdigit() else None
+    if not time_delta:
+        await ctx.send("Invalid time format. Please enter time in seconds.")
+        return
+    missing_perms = await check_permissions(ctx, ['manage_roles'])
+    if missing_perms:
+        await ctx.send(f"Missing permissions: {', '.join(missing_perms)}")
+        return
+    await member.timeout(time_delta, reason=reason)
+    embed = discord.Embed(title="Muted", description=f"{member.mention} has been muted for {time} seconds.", color=0xff0000)
+    await ctx.send(embed=embed)
+
+# Unmute Command
+@bot.command()
+@has_permissions(manage_roles=True)
+async def unmute(ctx, member: discord.Member):
+    missing_perms = await check_permissions(ctx, ['manage_roles'])
+    if missing_perms:
+        await ctx.send(f"Missing permissions: {', '.join(missing_perms)}")
+        return
+    await member.timeout(None)
+    embed = discord.Embed(title="Unmuted", description=f"{member.mention} has been unmuted.", color=0x00ff00)
+    await ctx.send(embed=embed)
+
 # Kick Command
 @bot.command()
 @has_permissions(kick_members=True)
 async def kick(ctx, member: discord.Member, *, reason=None):
-    """Kick a member"""
     missing_perms = await check_permissions(ctx, ['kick_members'])
     if missing_perms:
         await ctx.send(f"Missing permissions: {', '.join(missing_perms)}")
@@ -63,7 +103,6 @@ async def kick(ctx, member: discord.Member, *, reason=None):
 @bot.command()
 @has_permissions(ban_members=True)
 async def ban(ctx, member: discord.Member, *, reason=None):
-    """Ban a member"""
     missing_perms = await check_permissions(ctx, ['ban_members'])
     if missing_perms:
         await ctx.send(f"Missing permissions: {', '.join(missing_perms)}")
@@ -72,11 +111,10 @@ async def ban(ctx, member: discord.Member, *, reason=None):
     embed = discord.Embed(title="Banned", description=f"{member.mention} has been banned.", color=0xff0000)
     await ctx.send(embed=embed)
 
-# Clear Command
+# Clear Command (Clearing messages)
 @bot.command()
 @has_permissions(manage_messages=True)
 async def clear(ctx, amount: int):
-    """Clear messages"""
     missing_perms = await check_permissions(ctx, ['manage_messages'])
     if missing_perms:
         await ctx.send(f"Missing permissions: {', '.join(missing_perms)}")
@@ -85,33 +123,10 @@ async def clear(ctx, amount: int):
     embed = discord.Embed(title="Messages Cleared", description=f"Cleared {amount} messages.", color=0x00ff00)
     await ctx.send(embed=embed)
 
-# Mute Command (Timeout)
-@bot.command()
-@has_permissions(manage_roles=True)
-async def mute(ctx, member: discord.Member, time: str, *, reason=None):
-    """Mute a member for a specified duration"""
-    time_delta = timedelta(seconds=int(time)) if time.isdigit() else None
-    if not time_delta:
-        await ctx.send("Invalid time format. Please enter time in seconds.")
-        return
-    await member.timeout(time_delta, reason=reason)
-    embed = discord.Embed(title="Muted", description=f"{member.mention} has been muted for {time} seconds.", color=0xff0000)
-    await ctx.send(embed=embed)
-
-# Unmute Command
-@bot.command()
-@has_permissions(manage_roles=True)
-async def unmute(ctx, member: discord.Member):
-    """Unmute a member"""
-    await member.timeout(None)
-    embed = discord.Embed(title="Unmuted", description=f"{member.mention} has been unmuted.", color=0x00ff00)
-    await ctx.send(embed=embed)
-
 # Role Command (Add/Remove Role)
 @bot.command()
 @has_permissions(manage_roles=True)
 async def role(ctx, member: discord.Member, role: discord.Role):
-    """Add a role to a member"""
     missing_perms = await check_permissions(ctx, ['manage_roles'])
     if missing_perms:
         await ctx.send(f"Missing permissions: {', '.join(missing_perms)}")
@@ -126,7 +141,6 @@ async def role(ctx, member: discord.Member, role: discord.Role):
 # Avatar Command (Get user avatar)
 @bot.command()
 async def avatar(ctx, member: discord.Member = None):
-    """Show a member's avatar"""
     if member is None:
         member = ctx.author
     embed = discord.Embed(title=f"{member.name}'s Avatar", color=0x00ff00)
@@ -136,7 +150,6 @@ async def avatar(ctx, member: discord.Member = None):
 # Banner Command (Get user banner)
 @bot.command()
 async def banner(ctx, member: discord.Member = None):
-    """Show a member's banner"""
     if member is None:
         member = ctx.author
     banner_url = member.banner.url if member.banner else None
@@ -150,7 +163,6 @@ async def banner(ctx, member: discord.Member = None):
 # Server Info Command
 @bot.command()
 async def serverinfo(ctx):
-    """Get information about the server"""
     guild = ctx.guild
     embed = discord.Embed(title=f"Server Info: {guild.name}", color=0x00ff00)
     embed.add_field(name="Server ID", value=guild.id, inline=False)
@@ -162,7 +174,6 @@ async def serverinfo(ctx):
 # User Info Command
 @bot.command()
 async def userinfo(ctx, member: discord.Member = None):
-    """Get information about a user"""
     if member is None:
         member = ctx.author
     embed = discord.Embed(title=f"User Info: {member.name}", color=0x00ff00)
@@ -175,13 +186,11 @@ async def userinfo(ctx, member: discord.Member = None):
 # Ping Command
 @bot.command()
 async def ping(ctx):
-    """Ping the bot"""
     await ctx.send(f'Pong! Latency is {round(bot.latency * 1000)}ms')
 
 # Show Commands
 @bot.command(name="commands")
 async def show_commands(ctx):
-    """Show bot commands"""
     embed = discord.Embed(
         title="Help Menu",
         description="List of available commands:",
@@ -198,6 +207,7 @@ async def show_commands(ctx):
     embed.add_field(name="?serverinfo", value="Get server information.", inline=False)
     embed.add_field(name="?userinfo", value="Get user information.", inline=False)
     embed.add_field(name="?ping", value="Check bot latency.", inline=False)
+
     await ctx.send(embed=embed)
 
 bot.run(TOKEN)
