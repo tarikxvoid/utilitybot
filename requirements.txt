@@ -1,4 +1,4 @@
 discord.py
 aiohttp
 pytz
-pet-pet-gif
+git+https://github.com/DerpyByte/pet-pet-gif.git
