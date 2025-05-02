@@ -330,30 +330,32 @@ async def whitecancer(interaction: discord.Interaction):
 async def blender(interaction: discord.Interaction):
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1320775701061828618/1320775715628781588/image.png?ex=676ad3bd&is=6769823d&hm=ffc0f3f1ea1eb6f49839fdd66a540733a0d73d7d3bc091832368c94d09125ecb&")
 
-#cmd pet
+
 @bot.tree.command(name="pet", description="Rub someone's avatar with a petpet gif!")
 @app_commands.describe(user="The user whose avatar you want to rub")
 async def pet(interaction: discord.Interaction, user: discord.User = None):
     target = user or interaction.user
-    avatar_url = target.display_avatar.with_size(512).with_format("png").url
-    petpet_url = f"https://some-random-api.com/canvas/petpet?avatar={avatar_url}"
+    avatar_url = target.display_avatar.with_size(128).with_format("png").url
 
-    await interaction.response.defer()  # Shows the bot is "thinking"
+    await interaction.response.defer()
 
+    # Download the avatar image
     async with aiohttp.ClientSession() as session:
-        async with session.get(petpet_url) as resp:
+        async with session.get(avatar_url) as resp:
             if resp.status != 200:
-                await interaction.followup.send("Failed to generate petpet gif.")
+                await interaction.followup.send("Failed to fetch avatar.")
                 return
-            data = await resp.read()
+            avatar_data = await resp.read()
 
-    file = discord.File(io.BytesIO(data), filename="petpet.gif")
+    # Generate petpet gif
+    petpet = petpetgif.make(io.BytesIO(avatar_data))
+
+    # Send as file
+    file = discord.File(petpet, filename="petpet.gif")
     await interaction.followup.send(
         content=f"{interaction.user.mention} rubs {target.mention}!",
         file=file
     )
-
-
 
 
 # Command: blender2
