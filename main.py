@@ -6,6 +6,7 @@ from datetime import timedelta, datetime
 import pytz
 import os
 import aiohttp
+import io
 from discord.ext.commands import has_permissions, MissingPermissions
 import random
 
@@ -328,18 +329,30 @@ async def whitecancer(interaction: discord.Interaction):
 async def blender(interaction: discord.Interaction):
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1320775701061828618/1320775715628781588/image.png?ex=676ad3bd&is=6769823d&hm=ffc0f3f1ea1eb6f49839fdd66a540733a0d73d7d3bc091832368c94d09125ecb&")
 
-# Command: pet
-@bot.tree.command(name="pet", description="Pet someone! Be aware you could get bitten!")
-@app_commands.describe(user="The user who you would like to pet!")
+#cmd pet
+@bot.tree.command(name="pet", description="Rub someone's avatar with a petpet gif!")
+@app_commands.describe(user="The user whose avatar you want to rub")
 async def pet(interaction: discord.Interaction, user: discord.User = None):
     target = user or interaction.user
     avatar_url = target.display_avatar.with_size(512).with_format("png").url
     petpet_url = f"https://some-random-api.com/canvas/petpet?avatar={avatar_url}"
 
-    embed = discord.Embed(description=f"{interaction.user.mention} rubs {target.mention}!")
-    embed.set_image(url=petpet_url)
+    await interaction.response.defer()  # Shows the bot is "thinking"
 
-    await interaction.response.send_message(embed=embed)
+    async with aiohttp.ClientSession() as session:
+        async with session.get(petpet_url) as resp:
+            if resp.status != 200:
+                await interaction.followup.send("Failed to generate petpet gif.")
+                return
+            data = await resp.read()
+
+    file = discord.File(io.BytesIO(data), filename="petpet.gif")
+    await interaction.followup.send(
+        content=f"{interaction.user.mention} rubs {target.mention}!",
+        file=file
+    )
+
+
 
 
 # Command: blender2
