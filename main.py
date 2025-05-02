@@ -7,7 +7,7 @@ import pytz
 import os
 import aiohttp
 import io
-from petpetgif import petpetgif
+from petpetgif import Petpet
 from discord.ext.commands import has_permissions, MissingPermissions
 import random
 
@@ -347,13 +347,15 @@ async def pet(interaction: discord.Interaction, user: discord.User = None):
             avatar_data = await resp.read()
 
     avatar_bytes = io.BytesIO(avatar_data)
-    result_gif = petpetgif(avatar_bytes)  # <- Call the function correctly
+    petpet = Petpet(avatar_bytes)
+    result_gif = petpet.generate()
 
     file = discord.File(result_gif, filename="petpet.gif")
     await interaction.followup.send(
         content=f"{interaction.user.mention} rubs {target.mention}!",
         file=file
     )
+
 
 # Command: blender2
 @bot.tree.command(name="blender2", description="Shows an Leak of the User achmedkilos.")
