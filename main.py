@@ -7,7 +7,7 @@ import pytz
 import os
 import aiohttp
 import io
-from petpetgif import petpet
+from petpetgif import petpetgif
 from discord.ext.commands import has_permissions, MissingPermissions
 import random
 
@@ -347,7 +347,7 @@ async def pet(interaction: discord.Interaction, user: discord.User = None):
             avatar_data = await resp.read()
 
     avatar_bytes = io.BytesIO(avatar_data)
-    result_gif = petpet(avatar_bytes)
+    result_gif = petpetgif(avatar_bytes)  # <- Call the function correctly
 
     file = discord.File(result_gif, filename="petpet.gif")
     await interaction.followup.send(
