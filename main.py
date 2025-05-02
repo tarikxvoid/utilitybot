@@ -7,7 +7,7 @@ import pytz
 import os
 import aiohttp
 import io
-from pet_pet import petpet
+from petpetgif import petpet
 from discord.ext.commands import has_permissions, MissingPermissions
 import random
 
