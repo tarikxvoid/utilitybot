@@ -7,7 +7,7 @@ import pytz
 import os
 import aiohttp
 import io
-import pet-pet-gif
+from pet_pet import petpet
 from discord.ext.commands import has_permissions, MissingPermissions
 import random
 
@@ -339,7 +339,6 @@ async def pet(interaction: discord.Interaction, user: discord.User = None):
 
     await interaction.response.defer()
 
-    # Download the avatar image
     async with aiohttp.ClientSession() as session:
         async with session.get(avatar_url) as resp:
             if resp.status != 200:
@@ -347,16 +346,14 @@ async def pet(interaction: discord.Interaction, user: discord.User = None):
                 return
             avatar_data = await resp.read()
 
-    # Generate petpet gif
-    petpet = petpetgif.make(io.BytesIO(avatar_data))
+    avatar_bytes = io.BytesIO(avatar_data)
+    result_gif = petpet(avatar_bytes)
 
-    # Send as file
-    file = discord.File(petpet, filename="petpet.gif")
+    file = discord.File(result_gif, filename="petpet.gif")
     await interaction.followup.send(
         content=f"{interaction.user.mention} rubs {target.mention}!",
         file=file
     )
-
 
 # Command: blender2
 @bot.tree.command(name="blender2", description="Shows an Leak of the User achmedkilos.")
