@@ -312,7 +312,7 @@ async def torlink(interaction: discord.Interaction):
     await interaction.response.send_message("https://tor.link/")
 
 
-@bot.tree.command(name="gleggmire", description="Shows gleggmire.")
+@bot.tree.command(name="gleggmire", description="Shows an picture of the streamer gleggmire.")
 async def gleggmire(interaction: discord.Interaction):
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1366068791749906444/1366138974749327654/1200x630bf-60.png?ex=680fdb91&is=680e8a11&hm=fc0c531da9b8b4a7998d293f4624cf0b4e7f640105fcfcb6f1e15ef8c08d4ef8&")
 
@@ -335,7 +335,7 @@ async def blender2(interaction: discord.Interaction):
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1297469727957848115/1353447104701403247/remix-23c39ee1-e260-4074-9abd-6f87775195af.png?ex=67e1af57&is=67e05dd7&hm=784d6bf53f633fe5d1fafa5f99ba635385a9b79036a3f3a095b98b46d74a84b7&")
 
 # Command: blender2
-@bot.tree.command(name="drachenlord", description="Shows Rainer Winkler")
+@bot.tree.command(name="drachenlord", description="Shows the person Rainer Winkler aka drachenlord a streamer")
 async def drachenlord(interaction: discord.Interaction):
     await interaction.response.send_message("https://i1.sndcdn.com/artworks-dN9mbk4QTEmEWMCv-JvamaA-t500x500.jpg")
 
