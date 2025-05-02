@@ -1,4 +1,4 @@
 discord.py
 aiohttp
 pytz
-petpetgif
+pet-pet-gif
