@@ -21,6 +21,7 @@ TOKEN = os.getenv("TOKEN")
 # Event: When the bot is ready
 @bot.event
 async def on_ready():
+    await bot.tree.sync()
     print(f'Logged in as {bot.user}')
 
 
@@ -281,6 +282,11 @@ async def revancedmods(interaction: discord.Interaction):
 async def vancedmods(interaction: discord.Interaction):
     await interaction.response.send_message("https://revanced.net/")
 
+# Cmd: gleggmire
+@bot.tree.command(name="gleggmire", description="Shows a picture of the streamer gleggmire.")
+async def gleggmire(interaction: discord.Interaction):
+    await interaction.response.send_message("https://cdn.discordapp.com/attachments/1366068791749906444/1366138974749327654/1200x630bf-60.png?ex=680fdb91&is=680e8a11&hm=fc0c531da9b8b4a7998d293f4624cf0b4e7f640105fcfcb6f1e15ef8c08d4ef8&")
+
 # Command: gorev2
 @bot.tree.command(name="gorev2", description="shows link to gore website (better)")
 async def gorev2(interaction: discord.Interaction):
@@ -312,34 +318,26 @@ async def torlink(interaction: discord.Interaction):
     await interaction.response.send_message("https://tor.link/")
 
 
-@bot.tree.command(name="gleggmire", description="Shows an picture of the streamer gleggmire.")
-async def gleggmire(interaction: discord.Interaction):
-    await interaction.response.send_message("https://cdn.discordapp.com/attachments/1366068791749906444/1366138974749327654/1200x630bf-60.png?ex=680fdb91&is=680e8a11&hm=fc0c531da9b8b4a7998d293f4624cf0b4e7f640105fcfcb6f1e15ef8c08d4ef8&")
-
-
 # Command: whitecancer
 @bot.tree.command(name="whitecancer", description="Shows an Leak of the Face from prs.stm")
 async def whitecancer(interaction: discord.Interaction):
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1197263175373029416/1320774762477125683/Screenshot_2024-12-23-16-26-49-28_572064f74bd5f9fa804b05334aa4f912.jpg?ex=676ad2da&is=6769815a&hm=34a6a69959d756e35c5d513d02fea290d42ef53450fc04329c775ad3d796a908&")
-
 
 # Command: blender
 @bot.tree.command(name="blender", description="Shows an Leak of the User achmedkilos with his Balls out.")
 async def blender(interaction: discord.Interaction):
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1320775701061828618/1320775715628781588/image.png?ex=676ad3bd&is=6769823d&hm=ffc0f3f1ea1eb6f49839fdd66a540733a0d73d7d3bc091832368c94d09125ecb&")
 
-
 # Command: blender2
 @bot.tree.command(name="blender2", description="Shows an Leak of the User achmedkilos.")
 async def blender2(interaction: discord.Interaction):
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1297469727957848115/1353447104701403247/remix-23c39ee1-e260-4074-9abd-6f87775195af.png?ex=67e1af57&is=67e05dd7&hm=784d6bf53f633fe5d1fafa5f99ba635385a9b79036a3f3a095b98b46d74a84b7&")
 
-# Command: blender2
-@bot.tree.command(name="drachenlord", description="Shows the person Rainer Winkler aka drachenlord a streamer")
+# Command: drachenlord
+@bot.tree.command(name="drachenlord", description="shows dragonlord streamer aka rainer winkler.")
 async def drachenlord(interaction: discord.Interaction):
-    await interaction.response.send_message("https://i1.sndcdn.com/artworks-dN9mbk4QTEmEWMCv-JvamaA-t500x500.jpg")
-
-
+    await interaction.response.send_message("https://cdn.discordapp.com/attachments/1297469727957848115/1353447104701403247/remix-23c39ee1-e260-4074-9abd-6f87775195af.png?ex=67e1af57&is=67e05dd7&hm=784d6bf53f633fe5d1fafa5f99ba635385a9b79036a3f3a095b98b46d74a84b7&")
+    
 # Command: babaeier22
 @bot.tree.command(name="babaeier22", description="Shows the Face and Fat Body of the User babaeier22")
 async def babaeier22(interaction: discord.Interaction):
