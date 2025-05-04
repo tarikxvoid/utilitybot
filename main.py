@@ -27,13 +27,6 @@ TOKEN = os.getenv("TOKEN")
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
 
-    # Check if FFmpeg is available
-    try:
-        subprocess.run(["ffmpeg", "-version"], check=True)
-        print("FFmpeg is installed and accessible.")
-    except FileNotFoundError:
-        print("FFmpeg is NOT installed or not in PATH.")
-
     # Sync slash commands
     try:
         synced = await bot.tree.sync()
@@ -359,37 +352,6 @@ async def babaeier22(interaction: discord.Interaction):
 @bot.tree.command(name="tylermeier", description="Shows an Picture of the User tyler_0199 where he was little. His real name is Tyler meier.")
 async def tylermeier(interaction: discord.Interaction):
     await interaction.response.send_message("https://cdn.discordapp.com/attachments/1320421030136909878/1320788318853795900/image0.jpg?ex=676adf7a&is=67698dfa&hm=4db57e4612eb5baaa76887c200bd1456504104989c654b9911253d49417b7cc7&\n https://www.tiktok.com/@tyler0199 Is his Tiktok Account.\nHis Real name is Tyler Meier.\n His Account Name on Discord is tyler_0199 and his UserID 1308425665875542017.\n He is 13 Years old and lives in Germany, Eschweiler Nordrhine-Westfalia.\n His Mothers Facebook Profile link is https://www.facebook.com/profile.php?id=100094314540349")
-
-# Whitelisted user IDs allowed to use TTS
-ALLOWED_TTS_USERS = {1116452227851235398}  # Replace with real user IDs
-
-@bot.tree.command(name="vcsay", description="Say something in voice channel using TTS")
-@app_commands.describe(text="The text you want the bot to say")
-async def say(interaction: discord.Interaction, text: str):
-    if interaction.user.id not in ALLOWED_TTS_USERS:
-        await interaction.response.send_message("You're not authorized to use TTS.", ephemeral=True)
-        return
-
-    if not interaction.user.voice or not interaction.user.voice.channel:
-        await interaction.response.send_message("You're not in a voice channel!", ephemeral=True)
-        return
-
-    vc = await interaction.user.voice.channel.connect()
-
-    # Create TTS audio file
-    tts = gTTS(text=text, lang='en')
-    tts.save("tts.mp3")
-
-    # Play the audio
-    vc.play(discord.FFmpegPCMAudio("tts.mp3", executable="ffmpeg"))
-        await interaction.response.send_message(f"Saying: {text}", ephemeral=True)
-
-    while vc.is_playing():
-        await discord.utils.sleep_until(discord.utils.utcnow() + discord.utils.timedelta(seconds=1))
-
-    await vc.disconnect()
-    os.remove("tts.mp3")
-
 # Command: userinfo
 @bot.tree.command(name="userinfo", description="Display information about yourself or a user.")
 @app_commands.describe(user="The user you want info about.")
