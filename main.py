@@ -10,6 +10,7 @@ import io
 from discord.ext.commands import has_permissions, MissingPermissions
 import random
 from gtts import gTTS
+import subprocess
 
 intents = discord.Intents.default()
 intents.members = True
@@ -31,6 +32,15 @@ async def on_ready():
         print(f"Synced {len(synced)} command(s).")
     except Exception as e:
         print(f"Failed to sync commands: {e}")
+
+
+
+try:
+    result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True, check=True)
+    print("FFmpeg is available:\n", result.stdout.split('\n')[0])
+except FileNotFoundError:
+    print("FFmpeg is NOT found.")
+
 
 # Command: ping
 @bot.tree.command(name="ping", description="Check the bot's latency.")
@@ -371,8 +381,7 @@ async def say(interaction: discord.Interaction, text: str):
     tts.save("tts.mp3")
 
     # Play the audio
-    vc.play(discord.FFmpegPCMAudio("tts.mp3"), after=lambda e: print("TTS done"))
-
+vc.play(discord.FFmpegPCMAudio("tts.mp3", executable="ffmpeg"))
     await interaction.response.send_message(f"Saying: {text}", ephemeral=True)
 
     while vc.is_playing():
