@@ -381,8 +381,8 @@ async def say(interaction: discord.Interaction, text: str):
     tts.save("tts.mp3")
 
     # Play the audio
-vc.play(discord.FFmpegPCMAudio("tts.mp3", executable="ffmpeg"))
-    await interaction.response.send_message(f"Saying: {text}", ephemeral=True)
+    vc.play(discord.FFmpegPCMAudio("tts.mp3", executable="ffmpeg"))
+        await interaction.response.send_message(f"Saying: {text}", ephemeral=True)
 
     while vc.is_playing():
         await discord.utils.sleep_until(discord.utils.utcnow() + discord.utils.timedelta(seconds=1))
