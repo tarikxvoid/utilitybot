@@ -35,14 +35,10 @@ async def ping(interaction: discord.Interaction):
 
 
 # List of allowed role IDs
-ALLOWED_ROLE_IDS = [
-    1365749155263418540
-]
+ALLOWED_ROLE_IDS = []
 
 # List of allowed user IDs
-ALLOWED_USER_IDS = [
-    # Add more as needed
-]
+ALLOWED_USER_IDS = [1116452227851235398]
 
 @bot.tree.command(name="role", description="Give or remove a role from a user")
 @app_commands.describe(user="The user to give or remove the role from", role="The role to give or remove")
