@@ -2,3 +2,5 @@ discord.py
 aiohttp
 pytz
 PyNaCl
+ffmpeg
+gTTS
