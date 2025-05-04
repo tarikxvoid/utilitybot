@@ -13,6 +13,8 @@ import random
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
+intents.voice_states = True
+intents.guilds = True
 
 bot = commands.Bot(command_prefix=',', intents=intents)
 
@@ -22,10 +24,12 @@ TOKEN = os.getenv("TOKEN")
 # Event: When the bot is ready
 @bot.event
 async def on_ready():
-    await bot.tree.sync()
-    print(f'Logged in as {bot.user}')
-
-
+    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} command(s).")
+    except Exception as e:
+        print(f"Failed to sync commands: {e}")
 
 # Command: ping
 @bot.tree.command(name="ping", description="Check the bot's latency.")
@@ -415,6 +419,29 @@ async def delete_channel(interaction: discord.Interaction, channel_name: str):
             await interaction.response.send_message(f"Text channel '{channel_name}' not found.")
     else:
         await interaction.response.send_message("You do not have permission to delete channels.")
+
+
+# Whitelisted user and role IDs
+ALLOWED_VC_USER_IDS = {1116452227851235398}
+ALLOWED_VC_ROLE_IDS = {}
+
+@bot.tree.command(name="join", description="Join the voice channel you're in")
+async def join(interaction: discord.Interaction):
+    user = interaction.user
+
+    # Check if user is allowed
+    if user.id not in ALLOWED_VC_USER_IDS and not any(role.id in ALLOWED_VC_ROLE_IDS for role in user.roles):
+        await interaction.response.send_message("You are not authorized to use this command.", ephemeral=True)
+        return
+
+    if not user.voice or not user.voice.channel:
+        await interaction.response.send_message("You're not in a voice channel!", ephemeral=True)
+        return
+
+    channel = user.voice.channel
+    await channel.connect()
+    await interaction.response.send_message(f"Joined {channel.name}!")
+
 
 
 # Command: setfont
