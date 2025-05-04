@@ -23,23 +23,23 @@ bot = commands.Bot(command_prefix='?', intents=intents)
 # Load bot token from Replit secrets
 TOKEN = os.getenv("TOKEN")
 
-# Event: When the bot is ready
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+
+    # Check if FFmpeg is available
+    try:
+        subprocess.run(["ffmpeg", "-version"], check=True)
+        print("FFmpeg is installed and accessible.")
+    except FileNotFoundError:
+        print("FFmpeg is NOT installed or not in PATH.")
+
+    # Sync slash commands
     try:
         synced = await bot.tree.sync()
         print(f"Synced {len(synced)} command(s).")
     except Exception as e:
         print(f"Failed to sync commands: {e}")
-
-
-
-try:
-    result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True, check=True)
-    print("FFmpeg is available:\n", result.stdout.split('\n')[0])
-except FileNotFoundError:
-    print("FFmpeg is NOT found.")
 
 
 # Command: ping
