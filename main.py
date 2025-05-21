@@ -308,9 +308,9 @@ async def mertsucuk(interaction: discord.Interaction):
     await interaction.response.send_message("https://www.dasding.de/newszone/1728566932667%2Cmert-sucuk-100~_v-1x1@2dM_-733e4a95d343c52e922dfd8e3ff26ae78b29e5be.jpg")
 
 # Command: blacklist
-@bot.tree.command(name="blacklist", description"="Shows an Lost of people that i hate")
+@bot.tree.command(name="blacklist", description"="Shows an List of people that i hate")
 async def blacklist(interaction: discord.Interaction):
-await
+    await
 interaction.response.send_message("@virtual1diva (1332477669677207694)")
 
 # Command: nsfwbbc
