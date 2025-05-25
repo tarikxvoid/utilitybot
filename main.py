@@ -310,8 +310,7 @@ async def mertsucuk(interaction: discord.Interaction):
 # Command: blacklist
 @bot.tree.command(name="blacklist", description="Shows an List of people that i hate")
 async def blacklist(interaction: discord.Interaction):
-    await
-interaction.response.send_message("@virtual1diva (1332477669677207694)")
+    await interaction.response.send_message("@virtual1diva (1332477669677207694)")
 
 # Command: nsfwbbc
 @bot.tree.command(name="nsfwbbc", description="Shows an Naked Black Person")
