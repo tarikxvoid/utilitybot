@@ -578,6 +578,31 @@ async def set_status(interaction: discord.Interaction, status: str):
     else:
         await interaction.response.send_message("You do not have permission to change the bot's status.")
 
+# decsription
+@bot.tree.command(name="setdescription", description="Set the bot's 'About Me' description.")
+@app_commands.describe(description="The custom description for the bot.")
+async def set_description(interaction: discord.Interaction, description: str):
+    user_id = interaction.user.id
+    if user_id == 1116452227851235398:
+        await bot.user.edit(bio=description)
+        await interaction.response.send_message(f"Bot description updated to: {description}")
+    else:
+        await interaction.response.send_message("You do not have permission to change the bot's description.")
+
+#name
+@bot.tree.command(name="setnickname", description="Set the bot's nickname in this server.")
+@app_commands.describe(nickname="The new nickname for the bot.")
+async def set_nickname(interaction: discord.Interaction, nickname: str):
+    user_id = interaction.user.id
+    if user_id == 1116452227851235398:
+        guild = interaction.guild
+        me = guild.me
+        await me.edit(nick=nickname)
+        await interaction.response.send_message(f"Bot nickname updated to: {nickname}")
+    else:
+        await interaction.response.send_message("You do not have permission to change the bot's nickname.")
+
+
 # Command: time
 @bot.tree.command(name="time", description="Shows the current time.")
 async def time(interaction: discord.Interaction):
