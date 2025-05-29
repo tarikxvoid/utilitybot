@@ -941,7 +941,8 @@ async def help_command(interaction: discord.Interaction):
             "`/onlinestatus <status> - OWNER ONLY (Sets the Online Status of the Bot.)\n"
             "`/vocalremover` - Sends an Link to the Website https://vocalremover.org/\n"
             "`/minimumage` - Shows the Minimum Age you must be to use Discord.\n"
-            "`/blender2` - Shows a Picture of the User achmedkilos."
+            "`/blender2` - Shows a Picture of the User achmedkilos.\n"
+            "**NOTE: THIS EMBED WASNT SCRIPTED TO ITS END COMMANDS THAT WASNT LISTED IN ANY EMBED OF THESE WILL SOON GET ADDED!**"
         ),
     
             inline=False
