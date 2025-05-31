@@ -472,7 +472,6 @@ async def server_info(interaction: discord.Interaction):
     embed.add_field(name="Server Name", value=guild.name)
     embed.add_field(name="Server ID", value=guild.id)
     embed.add_field(name="Owner", value=guild.owner)
-    embed.add_field(name="Region", value=guild.region)
     embed.add_field(name="Member Count", value=guild.member_count)
     embed.set_thumbnail(url=guild.icon.url)
     await interaction.response.send_message(embed=embed)
