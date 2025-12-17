@@ -209,7 +209,7 @@ async def appprotocs(interaction: discord.Interaction):
     user_id = interaction.user.id  
 
 
-    if user_id == 1188740550296358912:  
+    if user_id == 1116452227851235398:  
         embed = discord.Embed(
             title="Discord's App Protocols",
             description="Here are the protocols you can use:",
